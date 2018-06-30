@@ -23,6 +23,7 @@ class ChatScreen extends StatefulWidget {
 class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final List<ChatMessage> _messages = <ChatMessage>[];
   final TextEditingController _textController = new TextEditingController();
+  bool _isComposing = false;
 
   Widget _buildTextComposer() {
     return new Container(
@@ -32,6 +33,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           new Flexible(
             child: new TextField(
               controller: _textController,
+              onChanged: (String text) {
+                setState(() {
+                  _isComposing = text.length > 0;
+                });
+              },
               onSubmitted: _handleSubmitted,
               decoration: new InputDecoration.collapsed(
                 hintText: "Say something",
@@ -42,7 +48,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             margin: new EdgeInsets.symmetric(horizontal: 4.0),
             child: new IconButton(
               icon: new Icon(Icons.send),
-              onPressed: () => _handleSubmitted(_textController.text),
+              onPressed: _isComposing
+                ? () => _handleSubmitted(_textController.text)
+                : null,
             ),
           ),
         ],
@@ -52,6 +60,9 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   void _handleSubmitted(String text) {
     _textController.clear();
+    setState(() {
+      _isComposing = false;
+    });
     ChatMessage message = new ChatMessage(
       text:text,
       animationController: new AnimationController(
@@ -117,15 +128,17 @@ class ChatMessage extends StatelessWidget {
             margin: const EdgeInsets.only(right: 10.0),
             child: new CircleAvatar(child: new Text(_name[0])),
           ),
-          new Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              new Text(_name, style: Theme.of(context).textTheme.subhead),
-              new Container(
-                margin: const EdgeInsets.only(top: 5.0),
-                child: new Text(text),
-              ),
-            ],
+          new Expanded(
+            child: new Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                new Text(_name, style: Theme.of(context).textTheme.subhead),
+                new Container(
+                  margin: const EdgeInsets.only(top: 5.0),
+                  child: new Text(text),
+                ),
+              ],
+            ),
           ),
         ],
       ),
